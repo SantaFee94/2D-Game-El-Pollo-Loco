@@ -1,11 +1,13 @@
 class MovableObject {
-  x = 80;
+  x = 100;
   y = 155;
   img;
   height = 280;
   width = 130;
   imageCache = {};
   currentImage = 0;
+  otherDirection = false;
+  x_End = 2880;
 
   loadImage(path) {
     this.img = new Image();
@@ -20,13 +22,15 @@ class MovableObject {
     });
   }
 
-  moveRight() {}
-
-  moveLeft() {
-    setInterval( () => {
-        this.x -= this.speed;
-      }, 1000 / 60);
+  moveRight() {
+    setInterval(() => {
+      this.x += this.speed;
+    }, 1000 / 60);
   }
 
-  
+  moveLeft() {
+    setInterval(() => {
+      this.x -= this.speed;
+    }, 1000 / 60);
+  }
 }
