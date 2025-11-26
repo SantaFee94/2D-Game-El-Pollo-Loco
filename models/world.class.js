@@ -91,6 +91,8 @@ class World {
   }
 
   addToMap(movableObject) {
+    if (!movableObject.img) return; // Bild noch nicht geladen
+    
     if (movableObject.otherDirection) {
       this.ctx.save();
       this.ctx.translate(movableObject.x + movableObject.width, movableObject.y);

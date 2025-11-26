@@ -9,6 +9,9 @@ class MovableObject {
   currentImage = 0;
   otherDirection = false;
   x_End = 2880;
+  speedY = 0;
+  acceleration = 2.5;
+  groundLevel = 155;
 
   loadImage(path) {
     this.img = new Image();
@@ -33,5 +36,24 @@ class MovableObject {
     setInterval(() => {
       this.x -= this.speed;
     }, 1000 / 60);
+  }
+
+  applyGravity() {
+    setInterval(() => {
+      if (this.isAboveGround() || this.speedY > 0) {
+        this.y -= this.speedY;
+        this.speedY -= this.acceleration;
+      } else {
+        this.speedY = 0; // Setze speedY auf 0 wenn am Boden
+      }
+    }, 1000 / 60);
+  }
+
+  isAboveGround() {
+    return this.y < this.groundLevel;
+  }
+
+  jump() {
+    this.speedY = 35;
   }
 }

@@ -52,6 +52,8 @@ class Character extends MovableObject {
   longIdleIntervalId = null;
   isIdling = false;
   currentImage = 0;
+  jumpImage = 0;
+  canJump = true;
 
   constructor() {
     super();
@@ -61,6 +63,7 @@ class Character extends MovableObject {
     this.loadImages(this.IMAGES_IDLE);
     this.loadImages(this.IMAGES_LONG_IDLE);
     this.x = 100;
+    this.applyGravity();
     this.animate();
   }
 
@@ -86,6 +89,14 @@ class Character extends MovableObject {
       this.x -= this.speed;
       this.otherDirection = true;
     }
+    if (KEYS?.Space && !this.isAboveGround() && this.canJump) {
+      this.jump();
+      this.jumpImage = 0;
+      this.canJump = false;
+    }
+    if (!KEYS?.Space) {
+      this.canJump = true;
+    }
   }
 
   updateCameraPosition() {
@@ -107,12 +118,14 @@ class Character extends MovableObject {
       if (this.isIdling) return;
       
       const KEYS = this.world?.keyboard;
-      if (KEYS?.ArrowRight || KEYS?.ArrowLeft) {
+      if (this.isAboveGround()) {
+        this.playJumpingAnimation();
+      } else if (KEYS?.ArrowRight || KEYS?.ArrowLeft) {
         this.playWalkingAnimation();
       } else {
         this.showIdleFrame();
       }
-    }, 100);
+    }, 150   );
   }
 
   playWalkingAnimation() {
@@ -122,11 +135,29 @@ class Character extends MovableObject {
     this.currentImage++;
   }
 
+  playJumpingAnimation() {
+    const maxIndex = this.IMAGES_JUMPING.length - 1;
+    if (this.speedY > 20) {
+      // Aufstieg - erste Hälfte der Animation
+      this.jumpImage = Math.min(Math.floor((30 - this.speedY) / 5), Math.floor(maxIndex / 2));
+    } else if (this.speedY > 0) {
+      // Peak - mittlere Frames
+      this.jumpImage = Math.floor(maxIndex / 2);
+    } else {
+      // Abstieg - zweite Hälfte der Animation
+      this.jumpImage = Math.min(Math.floor(maxIndex / 2) + Math.floor(Math.abs(this.speedY) / 5), maxIndex);
+    }
+    // Stelle sicher, dass der Index gültig ist
+    this.jumpImage = Math.max(0, Math.min(this.jumpImage, maxIndex));
+    const path = this.IMAGES_JUMPING[this.jumpImage];
+    if (this.imageCache[path]) {
+      this.img = this.imageCache[path];
+    }
+  }
+
   showIdleFrame() {
     this.img = this.imageCache[this.IMAGES_IDLE[0]];
   }
-
-  jump() {}
 
   StopIdle() {
     this.clearIdleIntervals();
