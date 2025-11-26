@@ -54,6 +54,7 @@ class Character extends MovableObject {
   currentImage = 0;
   jumpImage = 0;
   canJump = true;
+  animationIntervalTime = 100;
 
   constructor() {
     super();
@@ -103,20 +104,20 @@ class Character extends MovableObject {
     if (!this.world) return;
 
     if (this.x < 0) this.x = 0;
-    
+
     const levelWidth = this.world.getLevelWidth?.() || 0;
     if (levelWidth > 0) {
       const maxX = Math.max(0, levelWidth - this.width);
       if (this.x > maxX) this.x = maxX;
     }
-    
+
     this.world.camera_x = -this.x + 100;
   }
 
   startAnimationInterval() {
     this.animateIntervalId = setInterval(() => {
       if (this.isIdling) return;
-      
+
       const KEYS = this.world?.keyboard;
       if (this.isAboveGround()) {
         this.playJumpingAnimation();
@@ -125,7 +126,7 @@ class Character extends MovableObject {
       } else {
         this.showIdleFrame();
       }
-    }, 150   );
+    }, this.animationIntervalTime);
   }
 
   playWalkingAnimation() {
@@ -145,7 +146,10 @@ class Character extends MovableObject {
       this.jumpImage = Math.floor(maxIndex / 2);
     } else {
       // Abstieg - zweite Hälfte der Animation
-      this.jumpImage = Math.min(Math.floor(maxIndex / 2) + Math.floor(Math.abs(this.speedY) / 5), maxIndex);
+      this.jumpImage = Math.min(
+        Math.floor(maxIndex / 2) + Math.floor(Math.abs(this.speedY) / 5),
+        maxIndex
+      );
     }
     // Stelle sicher, dass der Index gültig ist
     this.jumpImage = Math.max(0, Math.min(this.jumpImage, maxIndex));
@@ -198,7 +202,7 @@ class Character extends MovableObject {
     this.longIdleIntervalId = setInterval(() => {
       this.img = this.imageCache[this.IMAGES_LONG_IDLE[index]];
       index = (index + 1) % this.IMAGES_LONG_IDLE.length;
-    }, 125);
+    }, 175);
   }
 }
 
