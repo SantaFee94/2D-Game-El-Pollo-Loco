@@ -2,6 +2,13 @@ class World {
   character = new Character();
   enemies = [new Chicken(), new Chicken(), new Chicken()];
   clouds = [new Clouds()];
+  canvas;
+  ctx;
+  keyboard;
+  camera_x = -100;
+  anchorX = 100;
+  cameraSmooth = 0.05;
+
   backgroundObjects = [
     new BackgroundObject("img/5_background/layers/air.png", 0),
     new BackgroundObject("img/5_background/layers/3_third_layer/1.png", 0),
@@ -32,11 +39,6 @@ class World {
     new BackgroundObject("img/5_background/layers/2_second_layer/1.png", 719 * 6),
     new BackgroundObject("img/5_background/layers/1_first_layer/1.png", 719 * 6),
   ];
-  canvas;
-  ctx;
-  keyboard;
-  camera_x = -100;
-  max = 2880;
 
   constructor(canvas, keyboard) {
     this.ctx = canvas.getContext("2d");
@@ -51,20 +53,35 @@ class World {
   }
 
   draw() {
+    this.updateCamera();
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
     this.ctx.translate(this.camera_x, 0);
-
     this.addObjectsToMap(this.backgroundObjects);
     this.addObjectsToMap(this.clouds);
     this.addToMap(this.character);
     this.addObjectsToMap(this.enemies);
-    this.ctx.translate(-this.camera_x, -0);
+    this.ctx.translate(-this.camera_x, 0);
 
-    let self = this;
-    requestAnimationFrame(function () {
-      self.draw();
-    });
+    requestAnimationFrame(() => this.draw());
+  }
+
+  updateCamera() {
+    const target = -this.character.x + this.anchorX;
+    this.camera_x += (target - this.camera_x) * this.cameraSmooth;
+    this.clampCameraXToLevel();
+  }
+
+  getLevelWidth() {
+    return this.backgroundObjects?.length
+      ? Math.max(...this.backgroundObjects.map((o) => (o?.x || 0) + (o?.width || 0)))
+      : this.canvas?.width || 0;
+  }
+
+  clampCameraXToLevel() {
+    const levelWidth = this.getLevelWidth();
+    const canvasWidth = this.canvas?.width || 0;
+    const minX = Math.min(0, canvasWidth - levelWidth);
+    this.camera_x = Math.max(minX, Math.min(this.camera_x, 0));
   }
 
   addObjectsToMap(objects) {
@@ -72,6 +89,7 @@ class World {
       this.addToMap(object);
     });
   }
+
   addToMap(movableObject) {
     if (movableObject.otherDirection) {
       this.ctx.save();
