@@ -1,6 +1,7 @@
 class World {
   character = new Character();
-  enemies = [new Chicken(), new Chicken(), new Chicken()];
+  enemies = [];
+  enemyCount = 12; 
   clouds = [new Clouds()];
   canvas;
   ctx;
@@ -44,6 +45,7 @@ class World {
     this.ctx = canvas.getContext("2d");
     this.canvas = canvas;
     this.keyboard = keyboard;
+    this.spawnEnemies();
     this.draw();
     this.setWorld();
   }
@@ -59,6 +61,7 @@ class World {
     this.addObjectsToMap(this.backgroundObjects);
     this.addObjectsToMap(this.clouds);
     this.addToMap(this.character);
+    this.maintainEnemyCount();
     this.addObjectsToMap(this.enemies);
     this.ctx.translate(-this.camera_x, 0);
 
@@ -90,8 +93,79 @@ class World {
     });
   }
 
+  spawnEnemies() {
+    const levelWidth = this.getLevelWidth();
+    const padding = 100; // Abstand vom Rand
+    const minGap = 120; // minimaler Abstand zwischen Gegnern
+    const maxAttempts = 10;
+
+    const positions = [];
+
+    for (let i = 0; i < this.enemyCount; i++) {
+      let x;
+      let attempts = 0;
+      do {
+        x = padding + Math.random() * Math.max(0, levelWidth - padding * 2);
+        attempts++;
+      } while (
+        positions.some((p) => Math.abs(p - x) < minGap) &&
+        attempts < maxAttempts
+      );
+
+      positions.push(x);
+
+      const enemy = Math.random() < 0.6 ? new NormalChicken() : new SmallChicken();
+      enemy.x = x;
+      this.enemies.push(enemy);
+    }
+  }
+
+  /**
+   * Ensure the world always has at least `enemyCount` enemies.
+   * Spawns new enemies preferentially ahead of the player when possible.
+   */
+  maintainEnemyCount() {
+    const levelWidth = this.getLevelWidth();
+    const padding = 100;
+    const minGap = 120;
+
+    // If levelWidth is small, don't attempt complex spawning
+    if (levelWidth <= padding * 2) return;
+
+    while (this.enemies.length < this.enemyCount) {
+      // Try to spawn ahead of the player (prefer visible/forward area)
+      const canvasWidth = this.canvas?.width || 0;
+      const aheadSpace = levelWidth - (this.character.x + canvasWidth);
+
+      let spawnX;
+      if (aheadSpace > 200) {
+        const start = this.character.x + canvasWidth + 50;
+        const end = Math.min(levelWidth - padding, start + 400);
+        spawnX = start + Math.random() * Math.max(0, end - start);
+      } else {
+        // Not much room ahead — pick a random safe position across level
+        spawnX = padding + Math.random() * Math.max(0, levelWidth - padding * 2);
+      }
+
+      // Avoid placing too close to existing enemies
+      let attempts = 0;
+      while (
+        this.enemies.some((e) => Math.abs((e.x || 0) - spawnX) < minGap) &&
+        attempts++ < 8
+      ) {
+        spawnX += (Math.random() - 0.5) * minGap * 2;
+        // clamp
+        spawnX = Math.max(padding, Math.min(levelWidth - padding, spawnX));
+      }
+
+      const enemy = Math.random() < 0.6 ? new NormalChicken() : new SmallChicken();
+      enemy.x = spawnX;
+      this.enemies.push(enemy);
+    }
+  }
+
   addToMap(movableObject) {
-    if (!movableObject.img) return; // Bild noch nicht geladen
+    if (!movableObject.img) return;
     
     if (movableObject.otherDirection) {
       this.ctx.save();

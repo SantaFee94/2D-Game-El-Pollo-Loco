@@ -8,7 +8,6 @@ class MovableObject {
   imageCache = {};
   currentImage = 0;
   otherDirection = false;
-  x_End = 2880;
   speedY = 0;
   acceleration = 2.5;
   groundLevel = 155;
@@ -20,22 +19,10 @@ class MovableObject {
 
   loadImages(arr) {
     arr.forEach((path) => {
-      let img = new Image();
+      const img = new Image();
       img.src = path;
       this.imageCache[path] = img;
     });
-  }
-
-  moveRight() {
-    setInterval(() => {
-      this.x += this.speed;
-    }, 1000 / 60);
-  }
-
-  moveLeft() {
-    setInterval(() => {
-      this.x -= this.speed;
-    }, 1000 / 60);
   }
 
   applyGravity() {
@@ -44,7 +31,7 @@ class MovableObject {
         this.y -= this.speedY;
         this.speedY -= this.acceleration;
       } else {
-        this.speedY = 0; // Setze speedY auf 0 wenn am Boden
+        this.speedY = 0;
       }
     }, 1000 / 60);
   }

@@ -1,14 +1,13 @@
 class GameKeyboard {
   ALL_KEYS = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"];
-  ArrowLeft = false;
-  ArrowRight = false;
-  ArrowUp = false;
-  ArrowDown = false;
-  Space = false;
   idleStartTimeoutId = null;
-  startIdleAnimationTime = 1000; // Zeit in ms bis die Idle-Animation startet
+  idleDelay = 1000; 
 
   constructor() {
+    this.ALL_KEYS.forEach(key => {
+      this[key] = false;
+    });
+    
     window.addEventListener("keydown", (e) => {
       this.onKey(e, true);
     });
@@ -49,7 +48,7 @@ class GameKeyboard {
         window.world.character.StartIdle();
       }
       this.idleStartTimeoutId = null;
-    }, this.startIdleAnimationTime);
+    }, this.idleDelay);
   }
 }
 
