@@ -160,6 +160,10 @@ class World {
 
       const enemy = Math.random() < 0.6 ? new NormalChicken() : new SmallChicken();
       enemy.x = spawnX;
+      // Debug: log spawn for easier verification in browser console
+      if (typeof console !== "undefined" && console.debug) {
+        console.debug(`World: spawned enemy at ${Math.round(spawnX)}; total after spawn = ${this.enemies.length + 1}`);
+      }
       this.enemies.push(enemy);
     }
   }
