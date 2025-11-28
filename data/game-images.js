@@ -101,5 +101,13 @@ const ENEMIE_IMAGES = {
   ],
 };
 
+const BACKGROUND_CLOUDS = {
+  CLOUDS: [
+    "img/5_background/layers/4_clouds/1.png",
+    "img/5_background/layers/4_clouds/2.png",
+  ],
+};
+
 window.CHARACTER_IMAGES = CHARACTER_IMAGES;
 window.ENEMIE_IMAGES = ENEMIE_IMAGES;
+window.BACKGROUND_CLOUDS = BACKGROUND_CLOUDS;

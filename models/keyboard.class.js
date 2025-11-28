@@ -24,7 +24,7 @@ class GameKeyboard {
 
     if (isPressed) {
       this.stopIdleAnimation();
-    } else {
+    } else if (!this.hasActiveKeys()) {
       this.startIdleTimer();
     }
   }
@@ -44,11 +44,15 @@ class GameKeyboard {
 
   startIdleTimer() {
     this.idleStartTimeoutId = setTimeout(() => {
-      if (window.world?.character) {
+      if (!this.hasActiveKeys() && window.world?.character) {
         window.world.character.StartIdle();
       }
       this.idleStartTimeoutId = null;
     }, this.idleDelay);
+  }
+
+  hasActiveKeys() {
+    return this.ALL_KEYS.some((code) => this[code]);
   }
 }
 

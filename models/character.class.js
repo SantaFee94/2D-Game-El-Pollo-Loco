@@ -15,14 +15,13 @@ class Character extends MovableObject {
 
   idleAnimationIndex = 0;
   longIdleAnimationIndex = 0;
-  idleAnimationPhase = null; // 'idle' oder 'long_idle'
+  idleAnimationPhase = null; 
 
   animationIntervalTime = 100;
   idleAnimationTime = 200;
   longIdleAnimationTime = 175;
   lastIdleUpdate = 0;
   lastAnimationUpdate = 0;
-
 
   constructor() {
     super();
@@ -34,21 +33,22 @@ class Character extends MovableObject {
     this.x = 100;
     this.applyGravity();
     this.animate();
+    
+
   }
 
   animate() {
     this.startMainLoop();
+    this.StartIdle();
   }
 
   startMainLoop() {
     this.mainLoopId = setInterval(() => {
       const now = Date.now();
-      
-      // Movement (60 FPS)
+
       this.handleMovement();
       this.updateCameraPosition();
-      
-      // Animation updates
+
       if (!this.isIdling) {
         if (now - this.lastAnimationUpdate >= this.animationIntervalTime) {
           this.updateAnimation();
@@ -72,17 +72,17 @@ class Character extends MovableObject {
   }
 
   updateIdleAnimation(now) {
-    if (this.idleAnimationPhase === 'idle') {
+    if (this.idleAnimationPhase === "idle") {
       if (now - this.lastIdleUpdate >= this.idleAnimationTime) {
         this.img = this.imageCache[this.IMAGES_IDLE[this.idleAnimationIndex]];
         this.idleAnimationIndex++;
         if (this.idleAnimationIndex >= this.IMAGES_IDLE.length) {
-          this.idleAnimationPhase = 'long_idle';
+          this.idleAnimationPhase = "long_idle";
           this.longIdleAnimationIndex = 0;
         }
         this.lastIdleUpdate = now;
       }
-    } else if (this.idleAnimationPhase === 'long_idle') {
+    } else if (this.idleAnimationPhase === "long_idle") {
       if (now - this.lastIdleUpdate >= this.longIdleAnimationTime) {
         this.img = this.imageCache[this.IMAGES_LONG_IDLE[this.longIdleAnimationIndex]];
         this.longIdleAnimationIndex = (this.longIdleAnimationIndex + 1) % this.IMAGES_LONG_IDLE.length;
@@ -135,19 +135,15 @@ class Character extends MovableObject {
   playJumpingAnimation() {
     const maxIndex = this.IMAGES_JUMPING.length - 1;
     if (this.speedY > 20) {
-      // Aufstieg - erste Hälfte der Animation
-      this.jumpImage = Math.min(Math.floor((30 - this.speedY) / 5), Math.floor(maxIndex / 2));
+      this.jumpImage = Math.min(Math.floor((30 - this.speedY) / 50), Math.floor(maxIndex / 2));
     } else if (this.speedY > 0) {
-      // Peak - mittlere Frames
       this.jumpImage = Math.floor(maxIndex / 2);
     } else {
-      // Abstieg - zweite Hälfte der Animation
       this.jumpImage = Math.min(
-        Math.floor(maxIndex / 2) + Math.floor(Math.abs(this.speedY) / 5),
+        Math.floor(maxIndex / 2) + Math.floor(Math.abs(this.speedY) / 50),
         maxIndex
       );
     }
-    // Stelle sicher, dass der Index gültig ist
     this.jumpImage = Math.max(0, Math.min(this.jumpImage, maxIndex));
     const path = this.IMAGES_JUMPING[this.jumpImage];
     if (this.imageCache[path]) {
@@ -169,7 +165,7 @@ class Character extends MovableObject {
   StartIdle() {
     this.StopIdle();
     this.isIdling = true;
-    this.idleAnimationPhase = 'idle';
+    this.idleAnimationPhase = "idle";
     this.idleAnimationIndex = 0;
     this.lastIdleUpdate = Date.now();
   }

@@ -2,7 +2,7 @@ class World {
   character = new Character();
   enemies = [];
   enemyCount = 12; 
-  clouds = [new Clouds()];
+  clouds = Array.from({ length: 20 }, () => new Clouds());
   canvas;
   ctx;
   keyboard;
@@ -59,6 +59,7 @@ class World {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.backgroundObjects);
+    this.maintainClouds();
     this.addObjectsToMap(this.clouds);
     this.addToMap(this.character);
     this.maintainEnemyCount();
@@ -93,11 +94,28 @@ class World {
     });
   }
 
+  maintainClouds() {
+    const canvasWidth = this.canvas?.width || 0;
+
+    this.clouds = this.clouds.filter(
+      (cloud) => cloud.x + cloud.width > this.character.x - canvasWidth * 2
+    );
+
+    const targetCloudCount = 17;
+    while (this.clouds.length < targetCloudCount) {
+      const cloud = new Clouds();
+      // Neue Wolken etwas vor dem Spieler spawnen
+      const offset = canvasWidth + Math.random() * canvasWidth * 2;
+      cloud.x = this.character.x + offset;
+      this.clouds.push(cloud);
+    }
+  }
+
   spawnEnemies() {
     const levelWidth = this.getLevelWidth();
     const padding = 100; // Abstand vom Rand
     const minGap = 120; // minimaler Abstand zwischen Gegnern
-    const maxAttempts = 10;
+    const maxAttempts = 20;
 
     const positions = [];
 
@@ -120,20 +138,14 @@ class World {
     }
   }
 
-  /**
-   * Ensure the world always has at least `enemyCount` enemies.
-   * Spawns new enemies preferentially ahead of the player when possible.
-   */
   maintainEnemyCount() {
     const levelWidth = this.getLevelWidth();
     const padding = 100;
     const minGap = 120;
 
-    // If levelWidth is small, don't attempt complex spawning
     if (levelWidth <= padding * 2) return;
 
     while (this.enemies.length < this.enemyCount) {
-      // Try to spawn ahead of the player (prefer visible/forward area)
       const canvasWidth = this.canvas?.width || 0;
       const aheadSpace = levelWidth - (this.character.x + canvasWidth);
 
@@ -143,11 +155,9 @@ class World {
         const end = Math.min(levelWidth - padding, start + 400);
         spawnX = start + Math.random() * Math.max(0, end - start);
       } else {
-        // Not much room ahead — pick a random safe position across level
         spawnX = padding + Math.random() * Math.max(0, levelWidth - padding * 2);
       }
 
-      // Avoid placing too close to existing enemies
       let attempts = 0;
       while (
         this.enemies.some((e) => Math.abs((e.x || 0) - spawnX) < minGap) &&
