@@ -1,7 +1,9 @@
+const DEBUG_HITBOXES = true; // globaler Schalter für Hitbox-Rahmen
+
 class World {
   character = new Character();
   enemies = [];
-  enemyCount = 12; 
+  enemyCount = 12;
   clouds = Array.from({ length: 20 }, () => new Clouds());
   canvas;
   ctx;
@@ -64,6 +66,7 @@ class World {
     this.addToMap(this.character);
     this.maintainEnemyCount();
     this.addObjectsToMap(this.enemies);
+    this.checkCharacterEnemyCollisions();
     this.ctx.translate(-this.camera_x, 0);
 
     requestAnimationFrame(() => this.draw());
@@ -125,10 +128,7 @@ class World {
       do {
         x = padding + Math.random() * Math.max(0, levelWidth - padding * 2);
         attempts++;
-      } while (
-        positions.some((p) => Math.abs(p - x) < minGap) &&
-        attempts < maxAttempts
-      );
+      } while (positions.some((p) => Math.abs(p - x) < minGap) && attempts < maxAttempts);
 
       positions.push(x);
 
@@ -159,10 +159,7 @@ class World {
       }
 
       let attempts = 0;
-      while (
-        this.enemies.some((e) => Math.abs((e.x || 0) - spawnX) < minGap) &&
-        attempts++ < 8
-      ) {
+      while (this.enemies.some((e) => Math.abs((e.x || 0) - spawnX) < minGap) && attempts++ < 8) {
         spawnX += (Math.random() - 0.5) * minGap * 2;
         // clamp
         spawnX = Math.max(padding, Math.min(levelWidth - padding, spawnX));
@@ -177,6 +174,22 @@ class World {
   addToMap(movableObject) {
     if (!movableObject.img) return;
     
+    // ----------------- Start Debug-Hitbox -----------------
+    if (DEBUG_HITBOXES && !(movableObject instanceof Clouds)) {
+      this.ctx.strokeStyle = movableObject.hitboxColor || "red";
+      this.ctx.lineWidth = 2;
+      const hb = movableObject.getHitbox
+        ? movableObject.getHitbox()
+        : {
+            x: movableObject.x,
+            y: movableObject.y,
+            width: movableObject.width,
+            height: movableObject.height,
+          };
+      this.ctx.strokeRect(hb.x, hb.y, hb.width, hb.height);
+    }
+    // ----------------- Ende Debug-Hitbox -----------------
+
     if (movableObject.otherDirection) {
       this.ctx.save();
       this.ctx.translate(movableObject.x + movableObject.width, movableObject.y);
@@ -193,5 +206,18 @@ class World {
       movableObject.width,
       movableObject.height
     );
+  }
+
+  checkCharacterEnemyCollisions() {
+    this.enemies.forEach((enemy) => {
+      const isNowColliding = this.character.isColliding(enemy);
+      const wasColliding = !!enemy._wasCollidingWithCharacter;
+
+      if (isNowColliding && !wasColliding) {
+        console.log("Hit at:", "characterX =", this.character.x, "characterY =", this.character.y, "Richtung =", this.character.otherDirection ? "links" : "rechts");
+      }
+
+      enemy._wasCollidingWithCharacter = isNowColliding;
+    });
   }
 }

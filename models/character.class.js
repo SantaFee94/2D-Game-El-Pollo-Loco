@@ -4,6 +4,8 @@ class Character extends MovableObject {
   IMAGES_IDLE = window.CHARACTER_IMAGES.IDLE;
   IMAGES_LONG_IDLE = window.CHARACTER_IMAGES.LONG_IDLE;
 
+  hitboxColor = "blue";
+
   movmentIntervalId = null;
   animateIntervalId = null;
   mainLoopId = null;
@@ -15,7 +17,7 @@ class Character extends MovableObject {
 
   idleAnimationIndex = 0;
   longIdleAnimationIndex = 0;
-  idleAnimationPhase = null; 
+  idleAnimationPhase = null;
 
   animationIntervalTime = 100;
   idleAnimationTime = 200;
@@ -33,8 +35,6 @@ class Character extends MovableObject {
     this.x = 100;
     this.applyGravity();
     this.animate();
-    
-
   }
 
   animate() {
@@ -48,7 +48,6 @@ class Character extends MovableObject {
 
       this.handleMovement();
       this.updateCameraPosition();
-
       if (!this.isIdling) {
         if (now - this.lastAnimationUpdate >= this.animationIntervalTime) {
           this.updateAnimation();
@@ -58,6 +57,22 @@ class Character extends MovableObject {
         this.updateIdleAnimation(now);
       }
     }, 1000 / 60);
+
+    
+  }
+
+   getHitbox() {
+    const offsetX = 4;
+    const offsetY = + 107;
+    const hitboxWidth = this.width - 22;
+    const hitboxHeight = this.height - 120;
+
+    return {
+      x: this.x + offsetX,
+      y: this.y + offsetY,
+      width: hitboxWidth,
+      height: hitboxHeight,
+    };
   }
 
   updateAnimation() {

@@ -43,4 +43,26 @@ class MovableObject {
   jump() {
     this.speedY = 35;
   }
+
+  isColliding(other) {
+    const a = this.getHitbox();
+    const b = other.getHitbox
+      ? other.getHitbox()
+      : {
+          x: other.x,
+          y: other.y,
+          width: other.width,
+          height: other.height,
+        };
+
+    return !(
+      (
+        a.x + a.width < b.x || // a ist links von b
+        a.x > b.x + b.width || // a ist rechts von b
+        a.y + a.height < b.y || // a ist über b
+        a.y > b.y + b.height
+      ) // a ist unter b
+    );
+  }
+  
 }
